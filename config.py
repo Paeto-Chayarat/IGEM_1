@@ -1,8 +1,8 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATA: str
+    MONGO_URI: str
 
     class Config:
         env_file = ".env"

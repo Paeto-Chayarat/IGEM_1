@@ -7,5 +7,5 @@ COPY ./app /code/app
 COPY ./config.py /code/config.py
 COPY ./.env /code/.env
 
-EXPOSE 8081
+EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

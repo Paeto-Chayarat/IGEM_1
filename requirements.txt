@@ -1,7 +1,8 @@
 fastapi
 uvicorn
 httpx
-pymongo
+pymongo[srv]
 motor
 aredis
 python-dotenv
+pydantic_settings
