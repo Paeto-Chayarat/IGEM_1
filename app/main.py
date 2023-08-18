@@ -1,9 +1,9 @@
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic_settings import BaseSettings
-from typing import Dict
 from config import config
 from pymongo.mongo_client import MongoClient
+import json
+from pprint import pprint
 
 app = FastAPI()
 
@@ -17,37 +17,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 client = MongoClient(config.MONGO_URI)
-db = client["calculator"]
-collection = db["variable"]
+db = client.prediction_backend
+collection = db.sequences
+
+# How to start server with debug console:
+# uvicorn app.main:app --reload
 
 
-class Variable(BaseSettings):
-    name: str
-    value: int
-
-
-@app.get('/')
+@app.get("/")
 def hello_world():
     return {"Hello": "World"}
 
 
-@app.post('/variable')
-def post_variable(variable: Variable):
-    data = {"name": variable.name, "value": variable.value}
-    result = collection.insert_many([data])
-    return {variable.name: variable.value}
+@app.post("/sequences")
+async def add_sequences(request: Request):
+    data = await request.json()
+
+    res = collection.insert_many([data])
+
+    # test if the length of the inserted_ids list is greater than 0
+    if len(res.inserted_ids) > 0:
+        return True
+    else:
+        return False
 
 
-@app.get('/addition')
-def get_addition(variable_1: str, variable_2: str):
-    variable_1_list = list(collection.find({"name": variable_1}))
-    variable_2_list = list(collection.find({"name": variable_2}))
-    result = 0
-    if len(variable_1_list) != 0:
-        result = result + variable_1_list[0]["value"]
+@app.post("/add_task")
+async def add_task(request: Request):
+    data = await request.json()
+    print(data)
 
-    if len(variable_2_list) != 0:
-        result = result + variable_2_list[0]["value"]
-    return {"result": result}
+    file = open("input_folder/" + data["name"], "w")
+    file.write(data["file"])
+    file.close()
+    return True
